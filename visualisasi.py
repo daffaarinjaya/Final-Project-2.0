@@ -1,0 +1,198 @@
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+
+def chart():
+
+    # =========================
+    # 🌷 GLOBAL STYLE
+    # =========================
+    st.markdown("""
+    <style>
+    .stApp {
+        background: linear-gradient(180deg, #FFF7F8, #F6E4E7);
+    }
+
+    h1 {
+        font-size: 40px;
+        font-weight: 800;
+        color: #6E1F2A;
+        margin-bottom: 6px;
+    }
+
+    h3 {
+        color: #8C2F39;
+        font-weight: 700;
+    }
+
+    .subtitle {
+        color: #7A4A52;
+        font-size: 18px;
+        margin-bottom: 36px;
+    }
+
+    /* ================= KPI ================= */
+    .kpi-card {
+        background: linear-gradient(145deg, #B23A48, #D16C7C);
+        padding: 24px;
+        border-radius: 24px;
+        text-align: center;
+        color: white;
+        box-shadow: 0 18px 40px rgba(178,58,72,0.35);
+        transition: all 0.35s ease;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 26px 55px rgba(178,58,72,0.45);
+    }
+
+    .kpi-title {
+        font-size: 13px;
+        letter-spacing: 1.5px;
+        opacity: 0.9;
+    }
+
+    .kpi-value {
+        font-size: 40px;
+        font-weight: 800;
+        margin-top: 8px;
+    }
+
+    /* ================= GLASS ================= */
+    .glass {
+        background: rgba(255,255,255,0.45);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-radius: 26px;
+        padding: 22px;
+        box-shadow: 0 18px 40px rgba(0,0,0,0.10);
+        margin-bottom: 30px;
+    }
+
+    /* ================= INSIGHT ================= */
+    .insight {
+        background: linear-gradient(135deg, #FBE4E8, #F3C6CC);
+        padding: 20px 26px;
+        border-radius: 22px;
+        box-shadow: 0 12px 30px rgba(178,58,72,0.22);
+        border-left: 6px solid #B23A48;
+        margin-bottom: 16px;
+        color: #6E1F2A;
+        font-size: 16px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # =========================
+    # 📂 LOAD DATA
+    # =========================
+    df = pd.read_csv("Wine Quality Dataset.csv")
+    kpi = df["quality"].value_counts().to_dict()
+
+    # =========================
+    # 🎨 COLOR THEME
+    # =========================
+    WINE_MAIN = "#B23A48"
+    WINE_PALETTE = [
+        "#8C2F39", "#B23A48", "#C95A69",
+        "#D16C7C", "#E59AA5", "#F3C6CC"
+    ]
+
+    # =========================
+    # 🧾 HEADER
+    # =========================
+    st.markdown("<h1>🍷 Wine Quality Dashboard</h1>", unsafe_allow_html=True)
+    st.markdown(
+        "<div class='subtitle'>Balanced visual analytics of wine quality and chemical characteristics</div>",
+        unsafe_allow_html=True
+    )
+
+    # =========================
+    # 📊 KPI SECTION
+    # =========================
+    cols = st.columns(6)
+    for col, q in zip(cols, [3, 4, 5, 6, 7, 8]):
+        with col:
+            st.markdown(f"""
+            <div class="kpi-card">
+                <div class="kpi-title">QUALITY {q}</div>
+                <div class="kpi-value">{kpi.get(q, 0)}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # =========================
+    # 📈 ROW 1
+    # =========================
+    col1, col2 = st.columns(2)
+
+    with col1:
+        fig1 = px.box(
+            df, x="quality", y="alcohol",
+            title="Alcohol Content by Wine Quality",
+            color_discrete_sequence=[WINE_MAIN]
+        )
+        fig1.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+        st.markdown("<div class='glass'>", unsafe_allow_html=True)
+        st.plotly_chart(fig1, use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with col2:
+        fig2 = px.scatter(
+            df, x="pH", y="quality",
+            title="pH vs Wine Quality",
+            color_discrete_sequence=[WINE_MAIN]
+        )
+        fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+        st.markdown("<div class='glass'>", unsafe_allow_html=True)
+        st.plotly_chart(fig2, use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # =========================
+    # 📉 ROW 2
+    # =========================
+    alcohol_bins = pd.cut(
+        df["alcohol"],
+        bins=[0, 9, 11, 13, 20],
+        labels=["Low", "Medium", "High", "Very High"]
+    )
+    avg_quality = df.groupby(alcohol_bins)["quality"].mean().reset_index()
+
+    col3, col4 = st.columns([1, 1.2])
+
+    with col3:
+        fig3 = px.bar(
+            avg_quality, x="alcohol", y="quality",
+            title="Average Wine Quality by Alcohol Level",
+            color_discrete_sequence=[WINE_MAIN]
+        )
+        fig3.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+        st.markdown("<div class='glass'>", unsafe_allow_html=True)
+        st.plotly_chart(fig3, use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with col4:
+        qc = df["quality"].value_counts().sort_index()
+        fig4 = px.pie(
+            values=qc.values,
+            names=qc.index,
+            title="Wine Quality Distribution",
+            color_discrete_sequence=WINE_PALETTE
+        )
+        fig4.update_traces(textinfo="percent+label", pull=[0.06 if q == 6 else 0 for q in qc.index])
+        fig4.update_layout(paper_bgcolor="rgba(0,0,0,0)")
+        st.markdown("<div class='glass'>", unsafe_allow_html=True)
+        st.plotly_chart(fig4, use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # =========================
+    # 💡 INSIGHTS
+    # =========================
+    st.markdown("### 💡 Key Insights")
+
+    st.markdown("""
+    <div class="insight">🍷 Wine quality is dominated by <b>scores 5–6</b>, indicating stable mid-range quality.</div>
+    <div class="insight">🍷 Increasing <b>alcohol content</b> generally improves perceived wine quality.</div>
+    <div class="insight">🍷 Extreme quality wines (<b>3 & 8</b>) are rare, making them niche products.</div>
+    """, unsafe_allow_html=True)
