@@ -361,6 +361,38 @@ def ml_model():
     </div>
     """, unsafe_allow_html=True)
 
+        # ======================================================
+    # 📌 REKOMENDASI
+    # ======================================================
+    st.subheader("📌 Rekomendasi")
+
+    st.markdown("""
+    <div class="card">
+        <ul>
+            <li>
+                Gunakan <b>Ridge Regression</b> sebagai model utama karena paling stabil 
+                dan tahan terhadap masalah <i>multikolinearitas</i> antar fitur kimia.
+            </li>
+            <li>
+                Fokus pada <b>optimasi faktor kimia utama</b>, khususnya 
+                <b>alcohol, sulphates, dan volatile acidity</b> 
+                karena memiliki pengaruh signifikan terhadap kualitas wine.
+            </li>
+            <li>
+                Hindari kadar <b>volatile acidity</b> dan <b>chlorides</b> yang berlebihan 
+                karena terbukti dapat <b>menurunkan kualitas wine secara signifikan</b>.
+            </li>
+            <li>
+                Untuk pengembangan ke depan, pertimbangkan penggunaan 
+                <b>model non-linear</b> (seperti Random Forest atau Gradient Boosting) 
+                serta pemanfaatan <b>dashboard Streamlit</b> sebagai alat 
+                <i>monitoring</i> dan <i>decision support system</i>.
+            </li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+
     # ======================================================
     # 💾 SAVE MODEL
     # ======================================================
